@@ -111,6 +111,18 @@
   #endif
 #endif
 
+#ifdef RGB_LED_USESERIAL
+  #if RGB_LED_SERIAL == -1
+    #define LEDSERIAL UsbSerial
+  #elif WITHIN(RGB_LED_SERIAL, 1, NUM_UARTS)
+    #define LEDSERIAL MSERIAL(RGB_LED_SERIAL)
+  #elif NUM_UARTS == 5
+    #error "LCD_SERIAL_PORT must be -1 or from 1 to 5. Please update your configuration."
+  #else
+    #error "LCD_SERIAL_PORT must be -1 or from 1 to 3. Please update your configuration."
+  #endif
+#endif
+
 // Set interrupt grouping for this MCU
 void HAL_init();
 #define HAL_IDLETASK 1

@@ -58,9 +58,13 @@ LEDLights leds;
 
 void LEDLights::setup() {
   #if EITHER(RGB_LED, RGBW_LED)
-    if (PWM_PIN(RGB_LED_R_PIN)) SET_PWM(RGB_LED_R_PIN); else SET_OUTPUT(RGB_LED_R_PIN);
-    if (PWM_PIN(RGB_LED_G_PIN)) SET_PWM(RGB_LED_G_PIN); else SET_OUTPUT(RGB_LED_G_PIN);
-    if (PWM_PIN(RGB_LED_B_PIN)) SET_PWM(RGB_LED_B_PIN); else SET_OUTPUT(RGB_LED_B_PIN);
+    #ifdef RGB_LED_SERIAL
+      LEDSERIAL.write('\n')
+    #else
+      if (PWM_PIN(RGB_LED_R_PIN)) SET_PWM(RGB_LED_R_PIN); else SET_OUTPUT(RGB_LED_R_PIN);
+      if (PWM_PIN(RGB_LED_G_PIN)) SET_PWM(RGB_LED_G_PIN); else SET_OUTPUT(RGB_LED_G_PIN);
+      if (PWM_PIN(RGB_LED_B_PIN)) SET_PWM(RGB_LED_B_PIN); else SET_OUTPUT(RGB_LED_B_PIN);
+    #endif
     #if ENABLED(RGBW_LED)
       if (PWM_PIN(RGB_LED_W_PIN)) SET_PWM(RGB_LED_W_PIN); else SET_OUTPUT(RGB_LED_W_PIN);
     #endif
@@ -110,20 +114,33 @@ void LEDLights::set_color(const LEDColor &incol
 
   #endif
 
+
   #if EITHER(RGB_LED, RGBW_LED)
 
-    // This variant uses 3-4 separate pins for the RGB(W) components.
-    // If the pins can do PWM then their intensity will be set.
-    #define UPDATE_RGBW(C,c) do {                       \
-      if (PWM_PIN(RGB_LED_##C##_PIN))                   \
-        analogWrite(pin_t(RGB_LED_##C##_PIN), incol.c); \
-      else                                              \
-        WRITE(RGB_LED_##C##_PIN, incol.c ? HIGH : LOW); \
-    }while(0)
-    UPDATE_RGBW(R,r); UPDATE_RGBW(G,g); UPDATE_RGBW(B,b);
-    #if ENABLED(RGBW_LED)
-      UPDATE_RGBW(W,w);
+    #ifdef RGB_LED_USESERIAL
+      char cmd[100] = "M150 R";
+      strcat(cmd, String(incol.r, DEC).c_str());
+      strcat(cmd, " G");
+      strcat(cmd, String(incol.g, DEC).c_str());
+      strcat(cmd, " B");
+      strcat(cmd, String(incol.b, DEC).c_str());
+      strcat(cmd, "\n");
+      LEDSERIAL.write(cmd);
+    #else
+      // This variant uses 3-4 separate pins for the RGB(W) components.
+      // If the pins can do PWM then their intensity will be set.
+      #define UPDATE_RGBW(C,c) do {                       \
+        if (PWM_PIN(RGB_LED_##C##_PIN))                   \
+          analogWrite(pin_t(RGB_LED_##C##_PIN), incol.c); \
+        else                                              \
+          WRITE(RGB_LED_##C##_PIN, incol.c ? HIGH : LOW); \
+      }while(0)
+      UPDATE_RGBW(R,r); UPDATE_RGBW(G,g); UPDATE_RGBW(B,b);
+      #if ENABLED(RGBW_LED)
+        UPDATE_RGBW(W,w);
+      #endif
     #endif
+
 
   #endif
 

@@ -2122,7 +2122,8 @@ static_assert(hbm[Z_AXIS] >= 0, "HOMING_BUMP_MM.Z must be greater than or equal 
 #if ENABLED(PRINTER_EVENT_LEDS) && !HAS_COLOR_LEDS
   #error "PRINTER_EVENT_LEDS requires BLINKM, PCA9533, PCA9632, RGB_LED, RGBW_LED or NEOPIXEL_LED."
 #elif ENABLED(RGB_LED)
-  #if !_RGB_TEST
+  #if ENABLED(RGB_LED_USESERIAL)
+  #elif !_RGB_TEST
     #error "RGB_LED requires RGB_LED_R_PIN, RGB_LED_G_PIN, and RGB_LED_B_PIN."
   #elif ENABLED(RGBW_LED)
     #error "Please enable only one of RGB_LED and RGBW_LED."

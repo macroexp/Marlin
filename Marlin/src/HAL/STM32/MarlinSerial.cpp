@@ -53,6 +53,9 @@
   DECLARE_SERIAL_PORT_EXP(LCD_SERIAL_PORT)
 #endif
 
+#if defined(RGB_LED_SERIAL) && RGB_LED_SERIAL >= 0
+  DECLARE_SERIAL_PORT_EXP(RGB_LED_SERIAL)
+#endif
 void MarlinSerial::begin(unsigned long baud, uint8_t config) {
   HardwareSerial::begin(baud, config);
   // Replace the IRQ callback with the one we have defined
